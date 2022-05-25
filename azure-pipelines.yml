@@ -1,11 +1,4 @@
 # Node.js with Angular
-- task: AzureRmWebAppDeployment@4
-  inputs:
-    ConnectionType: 'AzureRM'
-    azureSubscription: 'Azure subscription 1(7d20f677-bdb3-46c2-bac3-25a8fe5890a0)'
-    appType: 'webApp'
-    WebAppName: 'angular-adder'
-    packageForLinux: '$(System.DefaultWorkingDirectory)/**/*.zip'
 # Build a Node.js project that uses Angular.
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
@@ -17,6 +10,13 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
+- task: AzureWebApp@1
+  inputs:
+    azureSubscription: 'Azure subscription 1(7d20f677-bdb3-46c2-bac3-25a8fe5890a0)'
+    appType: 'webApp'
+    appName: 'angular-adder'
+    package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    deploymentMethod: 'auto'
 - task: NodeTool@0
   inputs:
     versionSpec: '10.x'
@@ -27,3 +27,5 @@ steps:
     npm install
     ng build --prod
   displayName: 'npm install and build'
+  
+
