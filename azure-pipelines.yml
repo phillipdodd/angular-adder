@@ -25,7 +25,7 @@ steps:
 - script: |
     npm install -g @angular/cli
     npm install
-    ng build --prod
+    ng build --prod --build-optimizer
   displayName: 'npm install and build'
   
 
