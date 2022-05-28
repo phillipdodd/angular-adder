@@ -34,11 +34,30 @@ export class CalculationService {
       );
   }
 
-  addCalculation(calculation: Calculation): Observable<Calculation> {
+  createCalculation(calculation: Calculation): Observable<Calculation> {
     return this.http.post<Calculation>(this.calculationsUrl, calculation, this.httpOptions).pipe(
       tap((newCalculation: Calculation) => this.log(`added new calculation with id ${newCalculation.id}`)),
-      catchError(this.handleError<Calculation>('addCalculation')) 
+      catchError(this.handleError<Calculation>('createCalculation')) 
     );
+  }
+
+  add(calculation: Calculation): Observable<Calculation>|undefined {
+    let numFirstAddend = tryConvertToNumberOrZero(calculation.firstAddend);
+    let numSecondAddend = tryConvertToNumberOrZero(calculation.secondAddend);
+
+    if (numFirstAddend === undefined || numSecondAddend === undefined) {
+      this.log(`CalculationComponent: Unable to add "${calculation.firstAddend}" and "${calculation.secondAddend}"`);
+      return undefined;
+    }
+
+    calculation.sum = numFirstAddend + numSecondAddend;
+    
+    let creationObservable = this.createCalculation(calculation);
+    creationObservable.subscribe(calculation => {
+      this.updateCalculationHistory(calculation);
+    });
+
+    return creationObservable;
   }
 
   getUpdateHistorySubject(): Observable<any> {
@@ -67,4 +86,14 @@ export class CalculationService {
   private log(message: string) {
     this.messageService.add(`CalculationService: ${message}`)
   }
+}
+
+function tryConvertToNumberOrZero(str: string): number | undefined {
+  let result = undefined;
+  if (str === "") {
+    result = 0;
+  } else if (!isNaN(+str)) {
+    result = +str;
+  }
+  return result;
 }
