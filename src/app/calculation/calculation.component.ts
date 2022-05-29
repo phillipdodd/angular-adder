@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Calculation } from '../calculation';
 import { CalculationService } from '../calculation.service';
-import { MessageService } from '../message.service';
 
 @Component({
   selector: 'app-calculation',
@@ -13,36 +12,34 @@ export class CalculationComponent implements OnInit {
   calculation: Calculation = {
     firstAddend: "",
     secondAddend: "",
-    sum: 0,
-    timestamp: new Date()
+    sum: 0
   }
 
   constructor(
-    private calculationService: CalculationService,
-    private messageService: MessageService
+    private calculationService: CalculationService
   ) { }
 
   ngOnInit(): void {
   }
 
   handleCalculate(): void {
-
-    this.calculation.sum = +this.calculation.firstAddend + +this.calculation.secondAddend;
-
-    if (isNaN(this.calculation.sum)) {
-      this.messageService.add(`CalculationComponent: Unable to add "${this.calculation.firstAddend}" and "${this.calculation.secondAddend}"`);
-      this.calculation.firstAddend = "";
-      this.calculation.secondAddend = "";
-      return;
+    if (this.calculation.firstAddend === "") {
+      this.calculation.firstAddend = "0";
     }
 
-    this.calculation.timestamp = new Date();
+    if (this.calculation.secondAddend === "") {
+      this.calculation.secondAddend = "0";
+    }
 
-    console.dir(this.calculation);
+    let observable = this.calculationService.add(this.calculation);
+    if (observable) {
+      observable.subscribe(_ => this.resetCalculationValues());
+    }
+  }
 
-    this.calculationService.addCalculation(this.calculation)
-      .subscribe(calculation => {
-        this.calculationService.updateCalculationHistory(calculation);
-      });
+  private resetCalculationValues(): void {
+    this.calculation.firstAddend = "";
+    this.calculation.secondAddend = "";
+    this.calculation.sum = 0;
   }
 }
