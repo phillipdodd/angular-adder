@@ -16,11 +16,16 @@ export class CalculationService {
 
   private updateCalculationHistorySubject = new Subject<any>();
   private calculationsUrl = 'api/calculations';
+  private azureFunctionDict = {
+    'add': 'https://angularadder.azurewebsites.net/api/Add'
+  }
 
   httpOptions = {
-    headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json'
+    })
   };
-
+  
   constructor(
     private http: HttpClient,
     private messageService: MessageService
@@ -35,7 +40,9 @@ export class CalculationService {
   }
 
   createCalculation(calculation: Calculation): Observable<Calculation> {
-    return this.http.post<Calculation>(this.calculationsUrl, calculation, this.httpOptions).pipe(
+    let urlWithParams = `${this.azureFunctionDict.add}?firstAddend=${calculation.firstAddend}&secondAddend=${calculation.secondAddend}`;
+
+    return this.http.post<Calculation>(urlWithParams, this.httpOptions).pipe(
       tap((newCalculation: Calculation) => this.log(`added new calculation with id ${newCalculation.id}`)),
       catchError(this.handleError<Calculation>('createCalculation')) 
     );
@@ -54,7 +61,9 @@ export class CalculationService {
     
     let creationObservable = this.createCalculation(calculation);
     creationObservable.subscribe(calculation => {
-      this.updateCalculationHistory(calculation);
+      if (calculation) {
+        this.updateCalculationHistory(calculation);
+      }
     });
 
     return creationObservable;
