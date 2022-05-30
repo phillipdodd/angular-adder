@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
-import { Observable, of, Subject } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { from, Observable, of, Subject } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
 
 import { Calculation } from './calculation';
 
 import { MessageService } from './message.service';
+
+import { CosmosClient, FeedResponse, ItemDefinition } from "@azure/cosmos";
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +17,13 @@ import { MessageService } from './message.service';
 export class CalculationService {
 
   private updateCalculationHistorySubject = new Subject<any>();
-  private calculationsUrl = 'api/calculations';
+
+  private cosmosKey = "FMJ7VDezxY2YS6NpG5AqqLXhkK36sWsOVS3xK4YH9xW2xylpaMA6CkAfp507eZ1n1e5oIejU0tvkt81ZeyKDGQ==";
+  private cosmosEndpoint = "https://angularadderadmin.documents.azure.com:443/";
+  private cosmosDatabaseId = "angular-adder";
+  private cosmosContainerId = "calculations";
+  private client = new CosmosClient({ endpoint: this.cosmosEndpoint, key: this.cosmosKey });
+
   private azureFunctionDict = {
     'add': 'https://angularadder.azurewebsites.net/api/Add'
   }
@@ -31,12 +39,11 @@ export class CalculationService {
     private messageService: MessageService
   ) { }
 
-  getCalculations(): Observable<Calculation[]> {
-    return this.http.get<Calculation[]>(this.calculationsUrl)
-      .pipe(
-        tap(_ => this.messageService.add('CalculationService: fetched calculations')),
-        catchError(this.handleError<Calculation[]>('getCalculations', []))
-      );
+  getCalculations(): Observable<FeedResponse<ItemDefinition>> {
+    return from(this.client.database(this.cosmosDatabaseId).container(this.cosmosContainerId).items.readAll().fetchAll()).pipe(
+      tap(_ => this.messageService.add('CalculationService: fetched calculations')),
+      catchError(this.handleError<FeedResponse<ItemDefinition>>('getCalculations'))
+    );
   }
 
   createCalculation(calculation: Calculation): Observable<Calculation> {
@@ -62,7 +69,7 @@ export class CalculationService {
     let creationObservable = this.createCalculation(calculation);
     creationObservable.subscribe(calculation => {
       if (calculation) {
-        this.updateCalculationHistory(calculation);
+        this.updateCalculationHistory();
       }
     });
 
@@ -73,8 +80,8 @@ export class CalculationService {
     return this.updateCalculationHistorySubject.asObservable();
   }
 
-  updateCalculationHistory(calculation: Calculation): void {
-    this.updateCalculationHistorySubject.next({ calculation });
+  updateCalculationHistory(): void {
+    this.updateCalculationHistorySubject.next({});
   }
 
   /**

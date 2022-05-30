@@ -1,6 +1,6 @@
 export interface Calculation {
     id?: any,
-    timestamp?: Date
+    _ts?: Date
     firstAddend: string,
     secondAddend: string,
     sum: number,
