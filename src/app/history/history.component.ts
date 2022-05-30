@@ -27,7 +27,9 @@ export class HistoryComponent implements OnInit {
 
   getCalculations(): void {
     this.calculationService.getCalculations()
-      .subscribe(calculations => this.calculations = calculations);
+      .subscribe(response => {
+        this.calculations = response.resources as Calculation[]
+      });
   }
 
 }
