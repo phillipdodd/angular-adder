@@ -10,6 +10,6 @@
         <td>{{calculation.firstAddend || ""}}</td>
         <td>{{calculation.secondAddend  || ""}}</td>
         <td class="sum">{{calculation.sum  || ""}}</td>
-        <td><span *ngIf="calculation.timestamp">{{calculation.timestamp | date:'M/d, h:mm a'}}</span></td>
+        <td><span *ngIf="calculation._ts">{{calculation._ts | date:'M/d, h:mm a'}}</span></td>
     </tr>
 </table>
