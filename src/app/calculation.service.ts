@@ -69,7 +69,7 @@ export class CalculationService {
     let creationObservable = this.createCalculation(calculation);
     creationObservable.subscribe(calculation => {
       if (calculation) {
-        this.updateCalculationHistory(calculation);
+        this.updateCalculationHistory();
       }
     });
 
@@ -80,8 +80,8 @@ export class CalculationService {
     return this.updateCalculationHistorySubject.asObservable();
   }
 
-  updateCalculationHistory(calculation: Calculation): void {
-    this.updateCalculationHistorySubject.next({ calculation });
+  updateCalculationHistory(): void {
+    this.updateCalculationHistorySubject.next({});
   }
 
   /**

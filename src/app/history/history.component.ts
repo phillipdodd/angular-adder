@@ -19,9 +19,8 @@ export class HistoryComponent implements OnInit {
 
     //* Add any new calculations
     this.calculationService.getUpdateHistorySubject()
-      .subscribe(newCalculation => {
-        console.dir(newCalculation)
-        this.calculations.push(newCalculation.calculation)
+      .subscribe(_ => {
+        this.getCalculations();
       });
   }
 
